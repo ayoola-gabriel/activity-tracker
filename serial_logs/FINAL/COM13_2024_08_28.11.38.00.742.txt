@@ -1,0 +1,46 @@
+Device begin
+Waiting a client connection to notify...
+Sensitivity: 0, On Time: 0, UNIT ID: UI7PCAHD
+RSSI: 99
+Output turned on
+RSSI: 99
+RSSI: 96
+RSSI: 98
+RSSI: 98
+RSSI: 98
+RSSI: 98
+RSSI: 99
+RSSI: 99
+RSSI: 95
+RSSI: 99
+RSSI: 97
+RSSI: 96
+RSSI: 98
+RSSI: 96
+RSSI: 96
+RSSI: 97
+RSSI: 98
+RSSI: 97
+RSSI: 95
+RSSI: 97
+RSSI: 96
+RSSI: 97
+RSSI: 96
+RSSI: 98
+RSSI: 96
+RSSI: 96
+RSSI: 96
+RSSI: 98
+RSSI: 97
+RSSI: 97
+RSSI: 97
+RSSI: 97
+RSSI: 97
+RSSI: 98
+RSSI: 96
+RSSI: 95
+RSSI: 98
+RSSI: 98
+RSSI: 97
+RSSI: 98
+RSSI: 95

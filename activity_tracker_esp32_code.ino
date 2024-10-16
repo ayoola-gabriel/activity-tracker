@@ -258,14 +258,16 @@ void setup() {
 void loop() {
 //check battery level 
   if(batLevel()<10){
-    digitalWrite(ACCL_PIN, HIGH);
-    beginSIM(false);
-    dispShutDown();
+    Serial.println("battery Low");
+    delay(1000);
+    // digitalWrite(ACCL_PIN, HIGH);
+    // beginSIM(false);
+    // dispShutDown();
 
-    pinMode(ACCL_PIN, INPUT);
-    pinMode(SIM_POWER, INPUT);
-    pinMode(SCREEN_POWER, INPUT);
-    esp_deep_sleep_start();
+    // pinMode(ACCL_PIN, INPUT);
+    // pinMode(SIM_POWER, INPUT);
+    // pinMode(SCREEN_POWER, INPUT);
+    // esp_deep_sleep_start();
   }
 
  imu.getMotion6(&ax, &ay, &az, &gx, &gy, &gz);
@@ -722,12 +724,12 @@ uint8_t batLevel(){
   // long v = adc1_get_raw(channel);
   long v = analogRead(0);
   // Serial.printf("Raw Int: %d\n", v);
-  // Serial.printf("Raw Batt Volt: %.2f\n", v*0.0015024);
+  Serial.printf("Raw Batt Volt: %.2f\n", v*0.0015024);
 
   long j = map(v,2063,2795,0,100);
   j = constrain(j,0,100);
 
-  // Serial.printf("Batt Percentage: %d\n", j);
+  Serial.printf("Batt Percentage: %d\n", j);
 
   return j;
 }

@@ -68,7 +68,7 @@ uint32_t captureFormerTapMillis, tapTimeOut = 0;
 uint32_t tapTime, dtapTime = 0, dtapApprove;
 
 const float fallThreshold = 900000; // Adjust this value to suit your needs (in m/s^3)
-const float tapThreshold = 20;
+const float tapThreshold = 18;
 const float walkThreshold = 6;
 const float runThreshold = 30;
 unsigned long runCheck = 0;
@@ -76,7 +76,7 @@ uint32_t lastIdleTime, lastActiveTime = 0;
 RTC_DATA_ATTR unsigned long idleTime = 0;
 RTC_DATA_ATTR unsigned long activeTime = 0;
 
-const int sampleInterval = 20;   // Interval in milliseconds between readings
+const int sampleInterval = 19;   // Interval in milliseconds between readings
 float prevAccX = 0.0, prevAccY = 0.0, prevAccZ = 0.0;
 
 uint16_t waitforValidWalk = 0;
@@ -249,25 +249,26 @@ void setup() {
   adc1_config_channel_atten(channel, atten);
     
   attachInterrupt(digitalPinToInterrupt(POWER_PIN),power_ISR,FALLING);
-  rtc.setTime(0, 15, 12, 28, 7, 2024);
+  // rtc.setTime(0, 20, 8, 24, 10, 2024);
   beginFS();
   delay(1);
   initMemory();
+  
 }
 
 void loop() {
 //check battery level 
-  if(batLevel()<10){
+  if(batLevel()<7){
     Serial.println("battery Low");
     delay(1000);
-    // digitalWrite(ACCL_PIN, HIGH);
-    // beginSIM(false);
-    // dispShutDown();
+    digitalWrite(ACCL_PIN, HIGH);
+    beginSIM(false);
+    dispShutDown();
 
-    // pinMode(ACCL_PIN, INPUT);
-    // pinMode(SIM_POWER, INPUT);
-    // pinMode(SCREEN_POWER, INPUT);
-    // esp_deep_sleep_start();
+    pinMode(ACCL_PIN, INPUT);
+    pinMode(SIM_POWER, INPUT);
+    pinMode(SCREEN_POWER, INPUT);
+    esp_deep_sleep_start();
   }
 
  imu.getMotion6(&ax, &ay, &az, &gx, &gy, &gz);
@@ -304,21 +305,27 @@ void loop() {
     // Check for a fall, or walking
     if(jerkMagnitude>tapThreshold && !trigger1 && !trigger2){
         // if(accY>=-0.2 && accY<=0.2){
+        // if(!walkMode){
       tapDetected = true;
       displayON(true);
       displayTimeout = millis();
+      Serial.println("Tap Detected");
         // }
-    } else if(fallAlgorithm((int)accMagnitude)){
+    } 
+    
+    if(fallAlgorithm((int)accMagnitude)){
       Serial.println("Fall Detected!");
       char* msg = "Fall detected. Kindly confirm";
-      drawActivity(0,90,catchActivity);
       displayON(true);
+      drawActivity(0,90,catchActivity);
+      delay(10);
       displayTimeout = millis();
       catchActivity = 10;
       } else if(checkDiff(accMagnitude)<0.3){
           // Serial.println("IDLE");
           catchActivity = 1;
       } else {
+    
       uint8_t steps = walkAlgorithm();
       switch(steps) {
         case 0: // no step
@@ -329,7 +336,8 @@ void loop() {
         stepCount++;
         Serial.printf("WALKING, steps: %d\n", stepCount);
         break;
-      }
+        
+      } 
     } 
 
     if(checkActivityChange != catchActivity) {
@@ -385,14 +393,14 @@ void loop() {
       _delay(300);
       switchState++;
       constrain(switchState,0,2);
-      Serial.printf("Switch state %s\n",switchState==1?"OPTION":switchState==2?"SELECT":"NONE");
+      // Serial.printf("Switch state %s\n",switchState==1?"OPTION":switchState==2?"SELECT":"NONE");
       
       if(switchState ==2) {
         optionSelected = deviceState;
-        Serial.printf("Option: %d",optionSelected);
+        // Serial.printf("Option: %d",optionSelected);
         switch(optionSelected){
           case 0: displaySetup(true);
-                  Serial.println("Entering Setup");
+                  // Serial.println("Entering Setup");
                   setupmode = true;
                   detachInterrupt(POWER_PIN);
                   runWebServer();
@@ -415,7 +423,7 @@ void loop() {
                   endServer();
                   break;
 
-          case 1: Serial.println("Entering Upload");
+          case 1: // Serial.println("Entering Upload");
                   displayUpload(true);
                   if(retries<2 && simComms()){
                   singleUpdate(idleTime, stepCount);
@@ -426,7 +434,7 @@ void loop() {
                   clearDisplay();
                   break;
           case 2: displayPower(true);
-                  Serial.println("Powering off");
+                  // Serial.println("Powering off");
                   delay(3000);
                   digitalWrite(ACCL_PIN, HIGH);
                   beginSIM(false);
@@ -459,13 +467,13 @@ void loop() {
 
       switch(deviceState){
                     case 0: displaySetup(false);
-                            Serial.println("Displaying Setup Mode");
+                            // Serial.println("Displaying Setup Mode");
                             break;
                     case 1: displayUpload(false);
                             retries = 0;
                             break;
                     case 2: displayPower(false);
-                            Serial.println("Displaying Power off");
+                            // Serial.println("Displaying Power off");
                             break;
                             }
       }
@@ -580,21 +588,28 @@ bool fallAlgorithm(int Amp){
   return f;
 }
 
+bool walkMode(){
+  if(accZ>0.1 && accZ<=0.6){
+    return true;
+  }
+  return false;
+}
+
 uint8_t walkAlgorithm(){
   uint8_t t = 0;
   
-  if(accZ>0.1 && accZ<=0.6) {
-    if(waitforValidWalk<55){
-    waitforValidWalk++;
-    // Serial.printf("Walk mode trigger - %d\n", waitforValidWalk);
-    }
-  } else waitforValidWalk = 0;
+  // if(accZ>=0.1 && accZ<=0.6) {
+  //   if(waitforValidWalk<55){
+  //   waitforValidWalk++;
+  //   Serial.printf("Walk mode trigger - %d\n", waitforValidWalk);
+  //   }
+  // } else waitforValidWalk = 0;
 
-  if(waitforValidWalk>=50){
+  // if(waitforValidWalk>=50){
   float absY = abs(accY);
   float absG = abs(gzz);
-  
-  if(absY >=1.0 && absG>=40 && !walkCapture){
+  // Serial.printf("Walk mode - %.1f, %.1f\n", absY, absG);
+  if(absY>=0.8 && absG>=35 && !walkCapture){
     // Serial.printf("Walk mode - %.1f, %.1f\n", absY, gzz);
     t = 1;
     walkCapture = true;
@@ -603,7 +618,7 @@ uint8_t walkAlgorithm(){
     // walkCapture = false;
   }
   if(absG<10) walkCapture = false;
-  }
+  // }
   return t;
 }
 
@@ -611,14 +626,12 @@ uint8_t batLevel(){
   // long v = adc1_get_raw(channel);
   long v = analogRead(0);
   // Serial.printf("Raw Int: %d\n", v);
-  Serial.printf("Raw Batt Volt: %.2f\n", v*0.0015024);
+  // Serial.printf("Raw Batt Volt: %.2f\n", v*0.0015024);
 
   long j = map(v,2063,2795,0,100);
   j = constrain(j,0,100);
 
-  Serial.printf("Batt Percentage: %d\n", j);
+  // Serial.printf("Batt Percentage: %d\n", j);
 
   return j;
 }
-
-

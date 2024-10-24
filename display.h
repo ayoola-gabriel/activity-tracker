@@ -5,7 +5,7 @@
 #include <fonts/Org_01.h>
 
 #define SCREEN_WIDTH 128 // OLED display width, in pixels
-#define SCREEN_HEIGHT 32 // OLED display height, in pixels
+#define SCREEN_HEIGHT 64 // OLED display height, in pixels
 #define SCREEN_POWER 2
 
 #define OLED_RESET     -1 // Reset pin # (or -1 if sharing Arduino reset pin)
@@ -190,15 +190,15 @@ void drawBatteryLevel(uint16_t vbat, int16_t v, int16_t y)
 {
   display.fillRect(v,y,32,10,SSD1306_BLACK);
   int16_t x = v+5;
-  if(vbat>=80){
+  if(vbat>=70){
     display.drawBitmap(x,y,bitmap_bat100,bitmap_bat_width,bitmap_bat_height,SSD1306_WHITE);
-  } else if(vbat>=60 && vbat<80) {
+  } else if(vbat>=50 && vbat<70) {
     display.drawBitmap(x,y,bitmap_bat75,bitmap_bat_width,bitmap_bat_height,SSD1306_WHITE);
-  } else if(vbat>=40 && vbat<60) {
+  } else if(vbat>=35 && vbat<50) {
     display.drawBitmap(x,y,bitmap_bat50,bitmap_bat_width,bitmap_bat_height,SSD1306_WHITE);
-  } else if(vbat>=20 && vbat<40) {
+  } else if(vbat>=15 && vbat<35) {
     display.drawBitmap(x,y,bitmap_bat25,bitmap_bat_width,bitmap_bat_height,SSD1306_WHITE);
-  } else if(vbat<20) {
+  } else if(vbat<15) {
     display.drawBitmap(x,y,bitmap_bat0,bitmap_bat_width,bitmap_bat_height,SSD1306_WHITE);
   }
   //  display.setCursor(v,y+13);
